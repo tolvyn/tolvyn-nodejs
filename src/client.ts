@@ -4,7 +4,7 @@
 import OpenAIBase, { ClientOptions } from 'openai';
 import { isProxyError, shouldNotFailOpen } from './failopen';
 
-const OPENAI_DEFAULT_PROXY_URL = 'http://localhost:8081/v1/proxy/openai';
+const OPENAI_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/openai/';
 const OPENAI_DIRECT_URL = 'https://api.openai.com/v1';
 
 export interface TolvynOpenAIOptions

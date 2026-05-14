@@ -1,6 +1,6 @@
 {
   "name": "tolvyn",
-  "version": "0.1.0",
+  "version": "1.0.3",
   "description": "Drop-in replacement for the OpenAI/Anthropic SDK — routes through TOLVYN for cost attribution, budget enforcement, and audit logging.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -12,6 +12,10 @@
       "types": "./dist/cjs/index.d.ts"
     }
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "test": "jest",
@@ -19,6 +23,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
+    "@google/generative-ai": "^0.21.0",
     "openai": "^4.0.0"
   },
   "devDependencies": {
@@ -31,7 +36,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.test.ts"],
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ],
     "globals": {
       "ts-jest": {
         "tsconfig": "tsconfig.cjs.json"

@@ -4,7 +4,7 @@
 import AnthropicBase, { ClientOptions } from '@anthropic-ai/sdk';
 import { makeFailOpenFetch } from './failopen';
 
-const ANTHROPIC_DEFAULT_PROXY_URL = 'http://localhost:8081/v1/proxy/anthropic';
+const ANTHROPIC_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/anthropic/';
 const ANTHROPIC_DIRECT_URL = 'https://api.anthropic.com';
 
 export interface TolvynAnthropicOptions
