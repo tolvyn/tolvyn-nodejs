@@ -15,6 +15,8 @@ export interface TolvynOpenAIOptions
   service?: string;
   feature?: string;
   agent?: string;
+  user?: string;
+  endCustomer?: string;
   failOpen?: boolean;
   openAIApiKey?: string;
 }
@@ -81,17 +83,20 @@ export class OpenAI extends OpenAIBase {
       OPENAI_DEFAULT_PROXY_URL;
 
     const defaultHeaders: Record<string, string> = {};
-    if (options.team)    defaultHeaders['X-Tolvyn-Team']    = options.team;
-    if (options.service) defaultHeaders['X-Tolvyn-Service'] = options.service;
-    if (options.feature) defaultHeaders['X-Tolvyn-Feature'] = options.feature;
-    if (options.agent)   defaultHeaders['X-Tolvyn-Agent']   = options.agent;
+    if (options.team)        defaultHeaders['X-Tolvyn-Team']         = options.team;
+    if (options.service)     defaultHeaders['X-Tolvyn-Service']      = options.service;
+    if (options.feature)     defaultHeaders['X-Tolvyn-Feature']      = options.feature;
+    if (options.agent)       defaultHeaders['X-Tolvyn-Agent']        = options.agent;
+    if (options.user)        defaultHeaders['X-Tolvyn-User']         = options.user;
+    if (options.endCustomer) defaultHeaders['X-Tolvyn-End-Customer'] = options.endCustomer;
 
     const fallbackKey = options.openAIApiKey ?? process.env['OPENAI_API_KEY'];
     const failOpen = options.failOpen ?? true;
 
     const {
       tolvynApiKey: _tk, proxyUrl: _pu, team: _t, service: _sv,
-      feature: _f, agent: _a, failOpen: _fo, openAIApiKey: _oak,
+      feature: _f, agent: _a, user: _u, endCustomer: _ec,
+      failOpen: _fo, openAIApiKey: _oak,
       ...rest
     } = options;
 

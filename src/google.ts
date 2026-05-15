@@ -18,6 +18,8 @@ export interface TolvynGoogleOptions {
   service?: string;
   feature?: string;
   agent?: string;
+  user?: string;
+  endCustomer?: string;
   failOpen?: boolean;
   googleApiKey?: string;
 }
@@ -46,10 +48,12 @@ export class TolvynGoogle extends GoogleGenerativeAI {
       GOOGLE_DEFAULT_PROXY_URL;
 
     this._tolvynHeaders = {};
-    if (options.team)    this._tolvynHeaders['X-Tolvyn-Team']    = options.team;
-    if (options.service) this._tolvynHeaders['X-Tolvyn-Service'] = options.service;
-    if (options.feature) this._tolvynHeaders['X-Tolvyn-Feature'] = options.feature;
-    if (options.agent)   this._tolvynHeaders['X-Tolvyn-Agent']   = options.agent;
+    if (options.team)        this._tolvynHeaders['X-Tolvyn-Team']         = options.team;
+    if (options.service)     this._tolvynHeaders['X-Tolvyn-Service']      = options.service;
+    if (options.feature)     this._tolvynHeaders['X-Tolvyn-Feature']      = options.feature;
+    if (options.agent)       this._tolvynHeaders['X-Tolvyn-Agent']        = options.agent;
+    if (options.user)        this._tolvynHeaders['X-Tolvyn-User']         = options.user;
+    if (options.endCustomer) this._tolvynHeaders['X-Tolvyn-End-Customer'] = options.endCustomer;
 
     this._tolvynFailOpen = options.failOpen ?? true;
     this._tolvynFallbackKey =
