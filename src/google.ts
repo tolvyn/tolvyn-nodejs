@@ -6,6 +6,7 @@ import {
   ModelParams,
   RequestOptions,
 } from '@google/generative-ai';
+import { isProxyError } from './failopen';
 
 // The proxy base URL is prepended to Google API paths (/v1beta/models/...).
 // The TOLVYN proxy strips /v1/proxy/google and forwards the remainder to Google.
@@ -24,7 +25,9 @@ export interface TolvynGoogleOptions {
   googleApiKey?: string;
 }
 
-export class TolvynGoogle extends GoogleGenerativeAI {
+// ND-05: renamed from TolvynGoogle → Google so stack traces and constructor.name
+// match the public API. Old name remains re-exportable via index.ts alias.
+export class Google extends GoogleGenerativeAI {
   public readonly _tolvynFailOpen: boolean;
   public readonly _tolvynFallbackKey: string | undefined;
   private readonly _tolvynProxyUrl: string;
@@ -38,8 +41,10 @@ export class TolvynGoogle extends GoogleGenerativeAI {
       );
     }
 
-    // GoogleGenerativeAI sends this value as x-goog-api-key.
-    // The TOLVYN proxy's extractBearer reads x-goog-api-key as a fallback.
+    // ND-06: The TOLVYN API key is passed as the GoogleGenerativeAI api key.
+    // Google's SDK sends this as `x-goog-api-key`; the TOLVYN proxy reads
+    // `x-goog-api-key` as a Bearer-auth fallback for Google requests.
+    // This is intentional — keep this comment if you refactor.
     super(tolvynApiKey);
 
     this._tolvynProxyUrl =
@@ -69,6 +74,31 @@ export class TolvynGoogle extends GoogleGenerativeAI {
       customHeaders: this._tolvynHeaders,
       ...requestOptions,
     };
-    return super.getGenerativeModel(modelParams, mergedOptions);
+    const model = super.getGenerativeModel(modelParams, mergedOptions);
+
+    // ND-01: wrap generateContent so a proxy-unreachable error retries against
+    // the real Google API using the fallback key.
+    if (!this._tolvynFailOpen || !this._tolvynFallbackKey) {
+      return model;
+    }
+    const fallbackKey = this._tolvynFallbackKey;
+    const originalGenerate = model.generateContent.bind(model);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (model as any).generateContent = async (...args: unknown[]) => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return await (originalGenerate as any)(...args);
+      } catch (e) {
+        if (!isProxyError(e)) throw e;
+        console.error(
+          'TOLVYN proxy unreachable — routing direct to Google (fail-open)',
+        );
+        const fallbackAI = new GoogleGenerativeAI(fallbackKey);
+        const fallbackModel = fallbackAI.getGenerativeModel(modelParams, requestOptions);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (fallbackModel.generateContent as any)(...args);
+      }
+    };
+    return model;
   }
 }

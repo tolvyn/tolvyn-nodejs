@@ -1,6 +1,6 @@
 {
   "name": "tolvyn",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Drop-in replacement for the OpenAI/Anthropic SDK — routes through TOLVYN for cost attribution, budget enforcement, and audit logging.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -23,8 +23,15 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
-    "@google/generative-ai": "^0.21.0",
     "openai": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@google/generative-ai": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "@google/generative-ai": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
