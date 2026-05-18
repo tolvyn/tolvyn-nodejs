@@ -2,7 +2,7 @@
  * TOLVYN OpenAI wrapper — thin drop-in over the official openai package.
  */
 import OpenAIBase, { ClientOptions } from 'openai';
-import { isProxyError, shouldNotFailOpen } from './failopen';
+import { makeFailOpenFetch } from './failopen';
 
 const OPENAI_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/openai/';
 const OPENAI_DIRECT_URL = 'https://api.openai.com/v1';
@@ -19,49 +19,6 @@ export interface TolvynOpenAIOptions
   endCustomer?: string;
   failOpen?: boolean;
   openAIApiKey?: string;
-}
-
-function makeFailOpenFetch(
-  fallbackKey: string,
-  directUrl: string,
-  provider: string
-): typeof globalThis.fetch {
-  return async function failOpenFetch(
-    input: RequestInfo | URL,
-    init?: RequestInit
-  ): Promise<Response> {
-    try {
-      const res = await fetch(input, init);
-      if (res.status === 503) {
-        throw Object.assign(new Error('503 from proxy'), { status: 503 });
-      }
-      return res;
-    } catch (err: unknown) {
-      if (shouldNotFailOpen(err) || !isProxyError(err)) throw err;
-      console.error(
-        `TOLVYN proxy unreachable — routing direct to ${provider} (fail-open)`
-      );
-      const originalUrl =
-        typeof input === 'string'
-          ? input
-          : input instanceof URL
-          ? input.href
-          : (input as Request).url;
-      const url = new URL(originalUrl);
-      const directBase = new URL(directUrl);
-      url.hostname = directBase.hostname;
-      url.protocol = directBase.protocol;
-      url.port = directBase.port;
-      url.pathname = url.pathname; // keep path intact
-
-      const newInit: RequestInit = { ...(init ?? {}) };
-      const headers = new Headers((init?.headers as HeadersInit) ?? {});
-      headers.set('Authorization', `Bearer ${fallbackKey}`);
-      newInit.headers = headers;
-
-      return fetch(url.toString(), newInit);
-    }
-  };
 }
 
 export class OpenAI extends OpenAIBase {

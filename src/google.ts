@@ -9,7 +9,7 @@ import {
 
 // The proxy base URL is prepended to Google API paths (/v1beta/models/...).
 // The TOLVYN proxy strips /v1/proxy/google and forwards the remainder to Google.
-const GOOGLE_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/google';
+const GOOGLE_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/google/';
 
 export interface TolvynGoogleOptions {
   tolvynApiKey?: string;
