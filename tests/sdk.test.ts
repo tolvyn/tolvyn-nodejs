@@ -1,4 +1,5 @@
 import { OpenAI, Anthropic } from '../src/index';
+import { applyFallbackAuth } from '../src/failopen';
 
 // ── Test 1: Imports ────────────────────────────────────────────────────────
 
@@ -80,4 +81,40 @@ test('Anthropic constructor and tag headers', () => {
   const headers = (client as any)._options?.defaultHeaders as Record<string, string> | undefined;
   expect(headers?.['X-Tolvyn-Team']).toBe('ml');
   expect(headers?.['X-Tolvyn-Service']).toBeUndefined();
+});
+
+// ── Fail-open direct auth (ND-09 / ND-11) ──────────────────────────────────
+
+test('applyFallbackAuth OpenAI → Bearer, no key headers', () => {
+  const h = new Headers({ Authorization: 'Bearer tlv_live_secret', 'content-type': 'application/json' });
+  applyFallbackAuth(h, 'OpenAI', 'sk-openai-fallback');
+  expect(h.get('Authorization')).toBe('Bearer sk-openai-fallback');
+  expect(h.has('x-api-key')).toBe(false);
+  expect(h.has('x-goog-api-key')).toBe(false);
+  expect(h.get('content-type')).toBe('application/json'); // non-auth preserved
+});
+
+test('applyFallbackAuth Anthropic → x-api-key with provider key, no TOLVYN leak', () => {
+  // Anthropic SDK ships the TOLVYN key in x-api-key — must be replaced, not leaked.
+  const h = new Headers({ 'x-api-key': 'tlv_live_secret', 'anthropic-version': '2023-06-01' });
+  applyFallbackAuth(h, 'Anthropic', 'sk-ant-fallback');
+  expect(h.get('x-api-key')).toBe('sk-ant-fallback'); // ND-11: provider key, not TOLVYN key
+  expect(h.has('Authorization')).toBe(false);          // ND-09: no Bearer
+  expect(h.get('anthropic-version')).toBe('2023-06-01');
+});
+
+test('applyFallbackAuth Google → x-goog-api-key with provider key', () => {
+  const h = new Headers({ 'x-goog-api-key': 'tlv_live_secret' });
+  applyFallbackAuth(h, 'Google', 'goog-fallback');
+  expect(h.get('x-goog-api-key')).toBe('goog-fallback');
+  expect(h.has('Authorization')).toBe(false);
+  expect(h.has('x-api-key')).toBe(false);
+});
+
+test('applyFallbackAuth strips all inbound auth headers', () => {
+  const h = new Headers({ Authorization: 'Bearer tlv', 'x-api-key': 'tlv', 'x-goog-api-key': 'tlv' });
+  applyFallbackAuth(h, 'anthropic', 'sk-ant-fallback');
+  expect(h.get('x-api-key')).toBe('sk-ant-fallback');
+  expect(h.has('Authorization')).toBe(false);
+  expect(h.has('x-goog-api-key')).toBe(false);
 });

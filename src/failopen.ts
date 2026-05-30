@@ -85,6 +85,40 @@ export function buildFallbackUrl(originalUrl: URL, fallbackBaseUrl: string): URL
   return newUrl;
 }
 
+// The header each provider's DIRECT API reads the API key from. The TOLVYN
+// proxy accepts Authorization/x-api-key/x-goog-api-key interchangeably, but the
+// providers themselves do NOT: Anthropic authenticates only via x-api-key and
+// Google only via x-goog-api-key — sending Bearer to them 401s.
+const PROVIDER_AUTH_HEADER: Record<string, string> = {
+  openai: 'Authorization',
+  anthropic: 'x-api-key',
+  google: 'x-goog-api-key',
+};
+
+/**
+ * Rewrite `headers` in place to authenticate a direct provider call.
+ *
+ * Strips every inbound auth header (Authorization/x-api-key/x-goog-api-key —
+ * each may carry the TOLVYN key) and sets the single header the provider's
+ * direct API expects, with the provider's own key. Fixes ND-09 (Bearer sent to
+ * Anthropic → 401) and ND-11 (the TOLVYN key in x-api-key leaking on fallback).
+ */
+export function applyFallbackAuth(
+  headers: Headers,
+  provider: string,
+  fallbackKey: string,
+): void {
+  headers.delete('Authorization');
+  headers.delete('x-api-key');
+  headers.delete('x-goog-api-key');
+  const header = PROVIDER_AUTH_HEADER[provider.toLowerCase()] ?? 'Authorization';
+  if (header === 'Authorization') {
+    headers.set('Authorization', `Bearer ${fallbackKey}`);
+  } else {
+    headers.set(header, fallbackKey);
+  }
+}
+
 export function makeFailOpenFetch(
   fallbackKey: string,
   directUrl: string,
@@ -115,7 +149,7 @@ export function makeFailOpenFetch(
 
       const newInit: RequestInit = { ...(init ?? {}) };
       const headers = new Headers((init?.headers as HeadersInit) ?? {});
-      headers.set('Authorization', `Bearer ${fallbackKey}`);
+      applyFallbackAuth(headers, provider, fallbackKey);
       newInit.headers = headers;
 
       return fetch(url.toString(), newInit);

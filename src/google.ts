@@ -10,7 +10,11 @@ import { isProxyError } from './failopen';
 
 // The proxy base URL is prepended to Google API paths (/v1beta/models/...).
 // The TOLVYN proxy strips /v1/proxy/google and forwards the remainder to Google.
-const GOOGLE_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/google/';
+// ND-10: NO trailing slash. @google/generative-ai builds `${baseUrl}/${apiVersion}/...`
+// WITHOUT collapsing a double slash (unlike the OpenAI/Anthropic SDKs), so a
+// trailing slash here produces `.../proxy/google//v1beta/...`. This intentionally
+// reverses ND-07's trailing-slash "consistency" for the Google provider only.
+const GOOGLE_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/google';
 
 export interface TolvynGoogleOptions {
   tolvynApiKey?: string;
@@ -70,7 +74,9 @@ export class Google extends GoogleGenerativeAI {
     requestOptions?: RequestOptions
   ) {
     const mergedOptions: RequestOptions = {
-      baseUrl: this._tolvynProxyUrl,
+      // ND-10: strip any trailing slash so an env/option override can't
+      // reintroduce the double-slash the Google SDK won't collapse.
+      baseUrl: this._tolvynProxyUrl.replace(/\/+$/, ''),
       customHeaders: this._tolvynHeaders,
       ...requestOptions,
     };
