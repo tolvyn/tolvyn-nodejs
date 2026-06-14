@@ -82,29 +82,49 @@ export class Google extends GoogleGenerativeAI {
     };
     const model = super.getGenerativeModel(modelParams, mergedOptions);
 
-    // ND-01: wrap generateContent so a proxy-unreachable error retries against
-    // the real Google API using the fallback key.
+    // ND-01 + BE-91: wrap every GenerativeModel network method so a
+    // proxy-unreachable error retries against the real Google API using the
+    // fallback key. Google's SDK exposes no fetch hook (unlike the
+    // OpenAI/Anthropic wrappers), so we rebuild a direct client — with the
+    // ORIGINAL requestOptions, i.e. WITHOUT the proxy baseUrl, so it hits the
+    // real generativelanguage.googleapis.com — and re-invoke the same method.
+    // (ND-01 covered only generateContent; BE-91 extends to stream/count/embed.
+    //  startChat returns a ChatSession with separate plumbing — not yet covered.)
     if (!this._tolvynFailOpen || !this._tolvynFallbackKey) {
       return model;
     }
     const fallbackKey = this._tolvynFallbackKey;
-    const originalGenerate = model.generateContent.bind(model);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (model as any).generateContent = async (...args: unknown[]) => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return await (originalGenerate as any)(...args);
-      } catch (e) {
-        if (!isProxyError(e)) throw e;
-        console.error(
-          'TOLVYN proxy unreachable — routing direct to Google (fail-open)',
-        );
-        const fallbackAI = new GoogleGenerativeAI(fallbackKey);
-        const fallbackModel = fallbackAI.getGenerativeModel(modelParams, requestOptions);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (fallbackModel.generateContent as any)(...args);
-      }
-    };
+    const failOpenMethods = [
+      'generateContent',
+      'generateContentStream',
+      'countTokens',
+      'embedContent',
+      'batchEmbedContents',
+    ] as const;
+
+    for (const method of failOpenMethods) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const original = (model as any)[method];
+      if (typeof original !== 'function') continue;
+      const boundOriginal = original.bind(model);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (model as any)[method] = async (...args: unknown[]) => {
+        try {
+          return await boundOriginal(...args);
+        } catch (e) {
+          if (!isProxyError(e)) throw e;
+          console.error(
+            'TOLVYN proxy unreachable — routing direct to Google (fail-open)',
+          );
+          const fallbackModel = new GoogleGenerativeAI(fallbackKey).getGenerativeModel(
+            modelParams,
+            requestOptions,
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return (fallbackModel as any)[method](...args);
+        }
+      };
+    }
     return model;
   }
 }

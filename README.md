@@ -106,7 +106,7 @@ Requests that fail open bypass the proxy and are not metered for that call.
 | `TOLVYN_API_KEY` | Yes (unless `tolvynApiKey` option is passed) | Your TOLVYN API key (`tlv_live_...`) |
 | `OPENAI_API_KEY` | For fail-open | Fallback OpenAI key if proxy unreachable |
 | `ANTHROPIC_API_KEY` | For fail-open | Fallback Anthropic key if proxy unreachable |
-| `GOOGLE_API_KEY` | For fail-open | Reserved; Google fail-open is implemented in v1.0.6+ |
+| `GOOGLE_API_KEY` | For fail-open | Fallback Google key if proxy unreachable (`generateContent` in v1.0.6+; `generateContentStream`/`countTokens`/`embedContent`/`batchEmbedContents` in v1.0.10+) |
 | `TOLVYN_PROXY_URL` | No | Override proxy URL |
 
 ## API keys
