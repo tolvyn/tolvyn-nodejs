@@ -2,7 +2,7 @@
  * Fail-open helpers: detect proxy unreachability and retry direct.
  */
 
-const PROXY_PREFIX_RE = /^\/v1\/proxy\/(?:openai|anthropic|google)\//;
+const PROXY_PREFIX_RE = /^\/v1\/proxy\/(?:openai|anthropic|google|deepseek)\//;
 
 export function isProxyError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
@@ -93,6 +93,7 @@ const PROVIDER_AUTH_HEADER: Record<string, string> = {
   openai: 'Authorization',
   anthropic: 'x-api-key',
   google: 'x-goog-api-key',
+  deepseek: 'Authorization', // OpenAI-compatible; Bearer auth (same as the default)
 };
 
 /**

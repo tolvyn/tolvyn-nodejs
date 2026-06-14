@@ -50,10 +50,10 @@ const { OpenAI } = require("tolvyn");
 const client = new OpenAI({ tolvynApiKey: process.env.TOLVYN_API_KEY, team: "backend" });
 ```
 
-## All three providers
+## All four providers
 
 ```typescript
-import { OpenAI, Anthropic, Google } from "tolvyn";
+import { OpenAI, Anthropic, Google, DeepSeek } from "tolvyn";
 
 // OpenAI
 const oai = new OpenAI({
@@ -70,6 +70,16 @@ const anth = new Anthropic({
 // Google (requires @google/generative-ai peer dep)
 const goog = new Google({ tolvynApiKey: "tlv_live_..." });
 const model = goog.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// DeepSeek (OpenAI-compatible API)
+const ds = new DeepSeek({
+  tolvynApiKey: "tlv_live_...",
+  deepSeekApiKey: "sk-...",        // optional — enables fail-open fallback
+});
+const dsResponse = await ds.chat.completions.create({
+  model: "deepseek-chat",
+  messages: [{ role: "user", content: "Hello" }],
+});
 ```
 
 ## Attribution headers
@@ -88,11 +98,11 @@ const client = new OpenAI({
 });
 ```
 
-The TOLVYN proxy strips all six headers before forwarding the request upstream — they never reach OpenAI/Anthropic/Google.
+The TOLVYN proxy strips all six headers before forwarding the request upstream — they never reach OpenAI/Anthropic/Google/DeepSeek.
 
 ## Fail-open behavior
 
-If TOLVYN's proxy is unreachable, the SDK automatically retries the request directly against the provider (requires `openAIApiKey` / `anthropicApiKey` / `googleApiKey` to be set). Disable with `failOpen: false`.
+If TOLVYN's proxy is unreachable, the SDK automatically retries the request directly against the provider (requires `openAIApiKey` / `anthropicApiKey` / `googleApiKey` / `deepSeekApiKey` to be set). Disable with `failOpen: false`.
 
 Triggers on: connection refused, timeout, DNS failure, HTTP 503.
 Does NOT trigger on: 4xx errors (auth failures, rate limits, bad requests).
@@ -107,6 +117,7 @@ Requests that fail open bypass the proxy and are not metered for that call.
 | `OPENAI_API_KEY` | For fail-open | Fallback OpenAI key if proxy unreachable |
 | `ANTHROPIC_API_KEY` | For fail-open | Fallback Anthropic key if proxy unreachable |
 | `GOOGLE_API_KEY` | For fail-open | Reserved; Google fail-open is implemented in v1.0.6+ |
+| `DEEPSEEK_API_KEY` | For fail-open | Fallback DeepSeek key if proxy unreachable (v1.0.9+) |
 | `TOLVYN_PROXY_URL` | No | Override proxy URL |
 
 ## API keys
@@ -114,7 +125,7 @@ Requests that fail open bypass the proxy and are not metered for that call.
 - Production keys start with `tlv_live_`
 - Test keys start with `tlv_test_` (use these in CI / staging)
 - Get your key at [app.tolvyn.io](https://app.tolvyn.io) → API Keys
-- **Provider keys** (OpenAI / Anthropic / Google) go in the dashboard under **Account → Provider Keys** — never in code. They are stored encrypted server-side.
+- **Provider keys** (OpenAI / Anthropic / Google / DeepSeek) go in the dashboard under **Account → Provider Keys** — never in code. They are stored encrypted server-side.
 
 ## TypeScript
 
@@ -125,6 +136,7 @@ import type {
   TolvynOpenAIOptions,
   TolvynAnthropicOptions,
   TolvynGoogleOptions,
+  TolvynDeepSeekOptions,
 } from "tolvyn";
 ```
 
