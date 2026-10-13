@@ -1,7 +1,7 @@
 {
   "name": "tolvyn",
-  "version": "1.0.10",
-  "description": "Drop-in replacement for the OpenAI/Anthropic/Google/DeepSeek SDKs — routes through TOLVYN for cost attribution, budget enforcement, and audit logging.",
+  "version": "1.0.11",
+  "description": "Drop-in replacement for the OpenAI/Anthropic/Google/DeepSeek SDKs \u2014 routes through TOLVYN for cost attribution, budget enforcement, and audit logging.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
@@ -19,19 +19,13 @@
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "test": "jest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run verify:pack",
+    "verify:pack": "bash scripts/verify-pack.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
-    "openai": "^4.0.0"
-  },
-  "peerDependencies": {
+    "openai": "^4.0.0",
     "@google/generative-ai": "^0.21.0"
-  },
-  "peerDependenciesMeta": {
-    "@google/generative-ai": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
@@ -50,7 +44,18 @@
       "ts-jest": {
         "tsconfig": "tsconfig.cjs.json"
       }
+    },
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
     }
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tolvyn/tolvyn-nodejs.git"
+  },
+  "homepage": "https://docs.tolvyn.io/sdks/nodejs",
+  "bugs": {
+    "url": "https://github.com/tolvyn/tolvyn-nodejs/issues"
+  }
 }

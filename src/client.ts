@@ -2,7 +2,7 @@
  * TOLVYN OpenAI wrapper — thin drop-in over the official openai package.
  */
 import OpenAIBase, { ClientOptions } from 'openai';
-import { makeFailOpenFetch } from './failopen';
+import { makeFailOpenFetch } from './failopen.js';
 
 const OPENAI_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/openai/';
 const OPENAI_DIRECT_URL = 'https://api.openai.com/v1';
