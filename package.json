@@ -1,6 +1,6 @@
 {
   "name": "tolvyn",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Drop-in replacement for the OpenAI/Anthropic/Google/DeepSeek SDKs \u2014 routes through TOLVYN for cost attribution, budget enforcement, and audit logging.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
