@@ -2,7 +2,7 @@
  * TOLVYN Anthropic wrapper — thin drop-in over @anthropic-ai/sdk.
  */
 import AnthropicBase, { ClientOptions } from '@anthropic-ai/sdk';
-import { makeFailOpenFetch } from './failopen';
+import { makeFailOpenFetch } from './failopen.js';
 
 const ANTHROPIC_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/anthropic/';
 const ANTHROPIC_DIRECT_URL = 'https://api.anthropic.com';

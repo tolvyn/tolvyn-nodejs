@@ -6,7 +6,7 @@ import {
   ModelParams,
   RequestOptions,
 } from '@google/generative-ai';
-import { isProxyError } from './failopen';
+import { isProxyError } from './failopen.js';
 
 // The proxy base URL is prepended to Google API paths (/v1beta/models/...).
 // The TOLVYN proxy strips /v1/proxy/google and forwards the remainder to Google.

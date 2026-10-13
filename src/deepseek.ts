@@ -7,7 +7,7 @@
  * https://api.deepseek.com/v1 (Bearer auth) when the TOLVYN proxy is unreachable.
  */
 import OpenAIBase, { ClientOptions } from 'openai';
-import { makeFailOpenFetch } from './failopen';
+import { makeFailOpenFetch } from './failopen.js';
 
 const DEEPSEEK_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/deepseek/';
 const DEEPSEEK_DIRECT_URL = 'https://api.deepseek.com/v1';
