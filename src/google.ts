@@ -6,7 +6,53 @@ import {
   ModelParams,
   RequestOptions,
 } from '@google/generative-ai';
+import { connect } from 'node:net';
 import { isProxyError } from './failopen.js';
+
+/**
+ * @google/generative-ai rewraps a network failure as
+ * `[GoogleGenerativeAI Error]: Error fetching from <url>: fetch failed` and
+ * DROPS the cause, so the error alone cannot tell "proxy refused the
+ * connection" from "proxy reset after forwarding". Only an error with no HTTP status qualifies at all, and then only
+ * if the proxy also refuses a fresh TCP connection right now.
+ */
+function isStatuslessFetchError(e: unknown): boolean {
+  if (!e || typeof e !== 'object') return false;
+  const err = e as { status?: unknown; message?: unknown };
+  return err.status === undefined && typeof err.message === 'string' &&
+    /^(\[GoogleGenerativeAI Error\]: )?Error fetching from /.test(err.message);
+}
+
+/** True if a TCP connection to the proxy cannot be opened within `timeoutMs`. */
+export function proxyUnreachable(proxyUrl: string, timeoutMs = 1500): Promise<boolean> {
+  return new Promise((resolve) => {
+    let u: URL;
+    try {
+      u = new URL(proxyUrl);
+    } catch {
+      resolve(false);
+      return;
+    }
+    const port = Number(u.port) || (u.protocol === 'https:' ? 443 : 80);
+    const sock = connect({ host: u.hostname, port });
+    const done = (unreachable: boolean) => {
+      sock.destroy();
+      resolve(unreachable);
+    };
+    sock.setTimeout(timeoutMs, () => done(true));
+    sock.once('connect', () => done(false));
+    sock.once('error', () => done(true));
+  });
+}
+
+/** A copy of `headers` without any X-Tolvyn-* entry, in any casing. */
+function withoutTolvynHeaders(headers: RequestOptions['customHeaders']): Headers {
+  const out = new Headers();
+  new Headers(headers ?? {}).forEach((v, k) => {
+    if (!k.toLowerCase().startsWith('x-tolvyn-')) out.set(k, v);
+  });
+  return out;
+}
 
 // The proxy base URL is prepended to Google API paths (/v1beta/models/...).
 // The TOLVYN proxy strips /v1/proxy/google and forwards the remainder to Google.
@@ -94,6 +140,13 @@ export class Google extends GoogleGenerativeAI {
       return model;
     }
     const fallbackKey = this._tolvynFallbackKey;
+    const proxyUrl = mergedOptions.baseUrl ?? this._tolvynProxyUrl;
+    // The direct client gets the caller's own requestOptions minus every
+    // X-Tolvyn-* header — attribution (X-Tolvyn-User / -End-Customer can be
+    // personal data) must never reach Google.
+    const fallbackOptions: RequestOptions | undefined = requestOptions
+      ? { ...requestOptions, customHeaders: withoutTolvynHeaders(requestOptions.customHeaders) }
+      : undefined;
     const failOpenMethods = [
       'generateContent',
       'generateContentStream',
@@ -112,13 +165,20 @@ export class Google extends GoogleGenerativeAI {
         try {
           return await boundOriginal(...args);
         } catch (e) {
-          if (!isProxyError(e)) throw e;
+          // Fail open only if the proxy was never reached. A provider 503 comes
+          // back with a status and is rethrown; a reset or timeout after the
+          // proxy forwarded is rethrown unless the proxy is now refusing
+          // connections. (The SDK hides response headers, so an
+          // X-Tolvyn-Unavailable 503 does not fail open for Google.)
+          const unreached = isProxyError(e) ||
+            (isStatuslessFetchError(e) && (await proxyUnreachable(proxyUrl)));
+          if (!unreached) throw e;
           console.error(
             'TOLVYN proxy unreachable — routing direct to Google (fail-open)',
           );
           const fallbackModel = new GoogleGenerativeAI(fallbackKey).getGenerativeModel(
             modelParams,
-            requestOptions,
+            fallbackOptions,
           );
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return (fallbackModel as any)[method](...args);
