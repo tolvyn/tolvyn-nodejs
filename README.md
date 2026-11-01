@@ -77,7 +77,7 @@ const ds = new DeepSeek({
   deepSeekApiKey: "sk-...",        // optional — enables fail-open fallback
 });
 const dsResponse = await ds.chat.completions.create({
-  model: "deepseek-chat",
+  model: "deepseek-flash",
   messages: [{ role: "user", content: "Hello" }],
 });
 ```

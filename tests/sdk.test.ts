@@ -121,6 +121,7 @@ test('applyFallbackAuth strips all inbound auth headers', () => {
 
 // Copied examples are run as-is; a model the provider has shut down fails on the
 // first call. Gemini 1.x and Claude 3.5 Haiku are no longer served.
+// DeepSeek examples use the current name; the older ones still work.
 test('README and source name no shut-down model', () => {
   const fs = require('fs');
   const path = require('path');
@@ -131,5 +132,6 @@ test('README and source name no shut-down model', () => {
     for (const dead of ['gemini-1.0-', 'gemini-1.5-', 'claude-3-5-haiku']) {
       expect([f, text.includes(dead)]).toEqual([f, false]);
     }
+    expect([f, text.includes('deepseek-chat')]).toEqual([f, false]);
   }
 });

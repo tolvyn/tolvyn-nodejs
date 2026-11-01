@@ -6,6 +6,8 @@
 
 - **The Google example now uses `gemini-3.8-flash`.** The README named
   `gemini-1.5-flash`, which Google no longer serves.
+- **The DeepSeek example now uses `deepseek-flash`**, DeepSeek's current model name.
+  `deepseek-chat` and `deepseek-reasoner` still work.
 
 ## 1.0.13 — 2026-10-26
 
