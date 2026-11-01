@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.14 — unreleased
+
+### Documentation
+
+- **The Google example now uses `gemini-3.8-flash`.** The README named
+  `gemini-1.5-flash`, which Google no longer serves.
+
 ## 1.0.13 — 2026-10-26
 
 ### Fail-open: changed behaviour

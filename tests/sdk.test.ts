@@ -118,3 +118,18 @@ test('applyFallbackAuth strips all inbound auth headers', () => {
   expect(h.has('Authorization')).toBe(false);
   expect(h.has('x-goog-api-key')).toBe(false);
 });
+
+// Copied examples are run as-is; a model the provider has shut down fails on the
+// first call. Gemini 1.x and Claude 3.5 Haiku are no longer served.
+test('README and source name no shut-down model', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const root = path.join(__dirname, '..');
+  const files = ['README.md', ...fs.readdirSync(path.join(root, 'src')).map((f: string) => `src/${f}`)];
+  for (const f of files) {
+    const text = fs.readFileSync(path.join(root, f), 'utf8');
+    for (const dead of ['gemini-1.0-', 'gemini-1.5-', 'claude-3-5-haiku']) {
+      expect([f, text.includes(dead)]).toEqual([f, false]);
+    }
+  }
+});

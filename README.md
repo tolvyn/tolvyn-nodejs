@@ -69,7 +69,7 @@ const anth = new Anthropic({
 
 // Google (requires @google/generative-ai peer dep)
 const goog = new Google({ tolvynApiKey: "tlv_live_..." });
-const model = goog.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = goog.getGenerativeModel({ model: "gemini-3.8-flash" });
 
 // DeepSeek (OpenAI-compatible API)
 const ds = new DeepSeek({
