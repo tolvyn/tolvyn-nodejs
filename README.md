@@ -38,7 +38,7 @@ const client = new OpenAI({
 
 // Everything else stays the same
 const response = await client.chat.completions.create({
-  model: "gpt-4o",
+  model: "gpt-6-luna",
   messages: [{ role: "user", content: "Hello" }],
 });
 ```

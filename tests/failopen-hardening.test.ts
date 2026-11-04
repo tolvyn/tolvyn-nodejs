@@ -1,5 +1,5 @@
 /**
- * Fail-open hardening (BE-507..BE-515): fail open ONLY when the proxy was never
+ * Fail-open hardening: fail open ONLY when the proxy was never
  * reached, or answered 503 with X-Tolvyn-Unavailable: 1; never forward any
  * X-Tolvyn-* header to the provider; replay the request intact; discard the 503.
  *

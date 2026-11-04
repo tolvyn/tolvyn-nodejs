@@ -121,8 +121,8 @@ const PROVIDER_AUTH_HEADER: Record<string, string> = {
  *
  * Strips every inbound auth header (Authorization/x-api-key/x-goog-api-key —
  * each may carry the TOLVYN key) and sets the single header the provider's
- * direct API expects, with the provider's own key. Fixes ND-09 (Bearer sent to
- * Anthropic → 401) and ND-11 (the TOLVYN key in x-api-key leaking on fallback).
+ * direct API expects, with the provider's own key. Prevents a Bearer sent to
+ * Anthropic (401) and the TOLVYN key in x-api-key leaking on fallback.
  */
 export function applyFallbackAuth(
   headers: Headers,
