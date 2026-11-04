@@ -1,5 +1,5 @@
 /**
- * BE-89: DeepSeek wrapper fail-open tests (v1.0.9).
+ * DeepSeek wrapper fail-open tests (v1.0.9).
  *
  * Written BEFORE the implementation. On current code:
  *   - buildFallbackUrl test  → RED (PROXY_PREFIX_RE excludes `deepseek`, so the

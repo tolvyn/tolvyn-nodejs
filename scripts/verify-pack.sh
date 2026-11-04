@@ -2,7 +2,7 @@
 # Pack the package, install THE TARBALL in a clean directory, and load it both
 # ways with one real call through a local server.
 #
-# WHY THIS EXISTS (BE-487). tolvyn@1.0.10 shipped a package that loaded by
+# WHY THIS EXISTS. tolvyn@1.0.10 shipped a package that loaded by
 # NEITHER module system: every relative specifier in dist/esm lacked the `.js`
 # Node's ESM resolver requires, and dist/cjs/index.js required the OPTIONAL peer
 # @google/generative-ai unconditionally. `import { OpenAI } from 'tolvyn'` -- the

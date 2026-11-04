@@ -83,7 +83,7 @@ test('Anthropic constructor and tag headers', () => {
   expect(headers?.['X-Tolvyn-Service']).toBeUndefined();
 });
 
-// ── Fail-open direct auth (ND-09 / ND-11) ──────────────────────────────────
+// ── Fail-open direct auth ──────────────────────────────────
 
 test('applyFallbackAuth OpenAI → Bearer, no key headers', () => {
   const h = new Headers({ Authorization: 'Bearer tlv_live_secret', 'content-type': 'application/json' });
@@ -98,8 +98,8 @@ test('applyFallbackAuth Anthropic → x-api-key with provider key, no TOLVYN lea
   // Anthropic SDK ships the TOLVYN key in x-api-key — must be replaced, not leaked.
   const h = new Headers({ 'x-api-key': 'tlv_live_secret', 'anthropic-version': '2023-06-01' });
   applyFallbackAuth(h, 'Anthropic', 'sk-ant-fallback');
-  expect(h.get('x-api-key')).toBe('sk-ant-fallback'); // ND-11: provider key, not TOLVYN key
-  expect(h.has('Authorization')).toBe(false);          // ND-09: no Bearer
+  expect(h.get('x-api-key')).toBe('sk-ant-fallback'); // provider key, not TOLVYN key
+  expect(h.has('Authorization')).toBe(false);          // no Bearer
   expect(h.get('anthropic-version')).toBe('2023-06-01');
 });
 
@@ -117,4 +117,22 @@ test('applyFallbackAuth strips all inbound auth headers', () => {
   expect(h.get('x-api-key')).toBe('sk-ant-fallback');
   expect(h.has('Authorization')).toBe(false);
   expect(h.has('x-goog-api-key')).toBe(false);
+});
+
+// Copied examples are run as-is; a model the provider has shut down fails on the
+// first call. Gemini 1.x and Claude 3.5 Haiku are no longer served; gpt-4o's
+// snapshots shut down on 2027-01-14.
+// DeepSeek examples use the current name; the older ones still work.
+test('README and source name no shut-down model', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const root = path.join(__dirname, '..');
+  const files = ['README.md', ...fs.readdirSync(path.join(root, 'src')).map((f: string) => `src/${f}`)];
+  for (const f of files) {
+    const text = fs.readFileSync(path.join(root, f), 'utf8');
+    for (const dead of ['gemini-1.0-', 'gemini-1.5-', 'claude-3-5-haiku', 'gpt-4o']) {
+      expect([f, text.includes(dead)]).toEqual([f, false]);
+    }
+    expect([f, text.includes('deepseek-chat')]).toEqual([f, false]);
+  }
 });

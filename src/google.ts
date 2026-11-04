@@ -56,10 +56,10 @@ function withoutTolvynHeaders(headers: RequestOptions['customHeaders']): Headers
 
 // The proxy base URL is prepended to Google API paths (/v1beta/models/...).
 // The TOLVYN proxy strips /v1/proxy/google and forwards the remainder to Google.
-// ND-10: NO trailing slash. @google/generative-ai builds `${baseUrl}/${apiVersion}/...`
+// NO trailing slash. @google/generative-ai builds `${baseUrl}/${apiVersion}/...`
 // WITHOUT collapsing a double slash (unlike the OpenAI/Anthropic SDKs), so a
 // trailing slash here produces `.../proxy/google//v1beta/...`. This intentionally
-// reverses ND-07's trailing-slash "consistency" for the Google provider only.
+// reverses the other wrappers' trailing-slash "consistency" for the Google provider only.
 const GOOGLE_DEFAULT_PROXY_URL = 'https://proxy.tolvyn.io/v1/proxy/google';
 
 export interface TolvynGoogleOptions {
@@ -75,7 +75,7 @@ export interface TolvynGoogleOptions {
   googleApiKey?: string;
 }
 
-// ND-05: renamed from TolvynGoogle → Google so stack traces and constructor.name
+// Renamed from TolvynGoogle → Google so stack traces and constructor.name
 // match the public API. Old name remains re-exportable via index.ts alias.
 export class Google extends GoogleGenerativeAI {
   public readonly _tolvynFailOpen: boolean;
@@ -91,7 +91,7 @@ export class Google extends GoogleGenerativeAI {
       );
     }
 
-    // ND-06: The TOLVYN API key is passed as the GoogleGenerativeAI api key.
+    // The TOLVYN API key is passed as the GoogleGenerativeAI api key.
     // Google's SDK sends this as `x-goog-api-key`; the TOLVYN proxy reads
     // `x-goog-api-key` as a Bearer-auth fallback for Google requests.
     // This is intentional — keep this comment if you refactor.
@@ -120,7 +120,7 @@ export class Google extends GoogleGenerativeAI {
     requestOptions?: RequestOptions
   ) {
     const mergedOptions: RequestOptions = {
-      // ND-10: strip any trailing slash so an env/option override can't
+      // Strip any trailing slash so an env/option override can't
       // reintroduce the double-slash the Google SDK won't collapse.
       baseUrl: this._tolvynProxyUrl.replace(/\/+$/, ''),
       customHeaders: this._tolvynHeaders,
@@ -128,14 +128,13 @@ export class Google extends GoogleGenerativeAI {
     };
     const model = super.getGenerativeModel(modelParams, mergedOptions);
 
-    // ND-01 + BE-91: wrap every GenerativeModel network method so a
+    // Wrap every GenerativeModel network method so a
     // proxy-unreachable error retries against the real Google API using the
     // fallback key. Google's SDK exposes no fetch hook (unlike the
     // OpenAI/Anthropic wrappers), so we rebuild a direct client — with the
     // ORIGINAL requestOptions, i.e. WITHOUT the proxy baseUrl, so it hits the
     // real generativelanguage.googleapis.com — and re-invoke the same method.
-    // (ND-01 covered only generateContent; BE-91 extends to stream/count/embed.
-    //  startChat returns a ChatSession with separate plumbing — not yet covered.)
+    // (startChat returns a ChatSession with separate plumbing — not yet covered.)
     if (!this._tolvynFailOpen || !this._tolvynFallbackKey) {
       return model;
     }

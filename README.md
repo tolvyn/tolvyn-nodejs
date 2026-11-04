@@ -38,7 +38,7 @@ const client = new OpenAI({
 
 // Everything else stays the same
 const response = await client.chat.completions.create({
-  model: "gpt-4o",
+  model: "gpt-6-luna",
   messages: [{ role: "user", content: "Hello" }],
 });
 ```
@@ -69,7 +69,7 @@ const anth = new Anthropic({
 
 // Google (requires @google/generative-ai peer dep)
 const goog = new Google({ tolvynApiKey: "tlv_live_..." });
-const model = goog.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = goog.getGenerativeModel({ model: "gemini-3.8-flash" });
 
 // DeepSeek (OpenAI-compatible API)
 const ds = new DeepSeek({
@@ -77,7 +77,7 @@ const ds = new DeepSeek({
   deepSeekApiKey: "sk-...",        // optional — enables fail-open fallback
 });
 const dsResponse = await ds.chat.completions.create({
-  model: "deepseek-chat",
+  model: "deepseek-flash",
   messages: [{ role: "user", content: "Hello" }],
 });
 ```

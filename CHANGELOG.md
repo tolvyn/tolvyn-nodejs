@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.14 — 2026-11-04
+
+### Documentation
+
+- **The OpenAI example in the README now uses `gpt-6-luna`.** OpenAI shuts down the
+  `gpt-4o` snapshots on 14 January 2027 and recommends `gpt-6-luna` as the replacement.
+- **The Google example now uses `gemini-3.8-flash`.** The README named
+  `gemini-1.5-flash`, which Google no longer serves.
+- **The DeepSeek example now uses `deepseek-flash`**, DeepSeek's current model name.
+  `deepseek-chat` and `deepseek-reasoner` still work.
+
 ## 1.0.13 — 2026-10-26
 
 ### Fail-open: changed behaviour
@@ -14,7 +25,7 @@
   (`ECONNRESET`, response timeouts, a bare `fetch failed`). TOLVYN may already have
   forwarded the request, and the direct retry was a second, unmetered provider call.
 - **It no longer fires on unrelated `ERR_*` errors** such as `ERR_INVALID_ARG_TYPE`
-  or `ERR_INVALID_URL`. (BE-513)
+  or `ERR_INVALID_URL`.
 - Enforcement responses (kill switch 451, budget/quota 429) never fail open.
 - Google: the Google SDK hides the cause and the response headers, so Google fails
   open only when a fresh TCP connection to the proxy also fails; the 503 marker does
@@ -25,8 +36,8 @@
 - The direct request no longer carries any `X-Tolvyn-*` header, set on the client
   or per request — including Google's per-request `customHeaders`
   (`X-Tolvyn-User` and `X-Tolvyn-End-Customer` can be personal data). Reported by
-  Maram Sai Harsha Vardhan Reddy. (BE-507)
+  Maram Sai Harsha Vardhan Reddy.
 - A `Request` object passed to the fail-open fetch keeps its headers, body and
   signal on the direct retry; a streamed body that cannot be replayed never fails
-  open. (BE-513)
-- The discarded 503 response body is cancelled before the retry. (BE-514)
+  open.
+- The discarded 503 response body is cancelled before the retry.

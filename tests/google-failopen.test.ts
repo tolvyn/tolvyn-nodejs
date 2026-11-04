@@ -1,8 +1,8 @@
 /**
- * BE-91: Google fail-open must cover all network methods, not just generateContent.
+ * Google fail-open must cover all network methods, not just generateContent.
  *
  * On current code:
- *   - generateContent test                       → GREEN (ND-01 already wraps it)
+ *   - generateContent test                       → GREEN (already wrapped)
  *   - generateContentStream/countTokens/          → RED (unwrapped → ECONNREFUSED
  *     embedContent/batchEmbedContents tests          propagates, no fail-over)
  *   - "fallback omits proxy baseUrl" test         → GREEN (via generateContent)
@@ -84,7 +84,7 @@ const METHODS = [
   'batchEmbedContents',
 ] as const;
 
-describe('Google fail-open coverage (BE-91)', () => {
+describe('Google fail-open coverage', () => {
   for (const method of METHODS) {
     test(`${method} fails over to direct Google with GOOGLE_API_KEY`, async () => {
       const model = makeModel();
