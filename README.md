@@ -5,7 +5,7 @@ Drop-in replacement for `openai`, `@anthropic-ai/sdk`, Google's `@google/generat
 [![npm](https://img.shields.io/npm/v/tolvyn.svg)](https://www.npmjs.com/package/tolvyn)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**10,000 free requests forever. No credit card.**
+**10,000 free requests a month. No credit card.**
 
 ## Install
 
