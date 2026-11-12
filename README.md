@@ -1,6 +1,6 @@
 # tolvyn
 
-Drop-in replacement for `openai` and `@anthropic-ai/sdk`. One line change. Every AI call metered, attributed, and governed.
+Drop-in replacement for `openai`, `@anthropic-ai/sdk`, Google's `@google/generative-ai` and DeepSeek. One line change. Every AI call metered, attributed, and governed.
 
 [![npm](https://img.shields.io/npm/v/tolvyn.svg)](https://www.npmjs.com/package/tolvyn)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
